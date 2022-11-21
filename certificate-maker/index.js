@@ -7,7 +7,7 @@ const generatePDF = async (name)=>{
         return res.arrayBuffer();
     });
 
-    const exFont = await fetch("./Montserrat-Bold.ttf").then((res) => {
+    const exFont = await fetch("./kapil.ttf").then((res) => {
         return res.arrayBuffer();
     });
 
