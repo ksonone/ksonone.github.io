@@ -1,16 +1,16 @@
 html {
-    scroll-behavior: smooth !important;
+    scroll-behavior: smooth;
 }
 
 body {
-    font-family: 'Salsa', sans-serif !important;
+    font-family: 'Salsa', sans-serif;
     padding: 0 !important;
-    -ms-overflow-style: none !important;
-    scrollbar-width: none !important;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 body::-webkit-scrollbar {
-    display: none !important;
+    display: none;
 }
 
 /*
@@ -20,12 +20,12 @@ Marhey
 */
 
 .font-esthetic {
-    font-family: 'Tangerine', cursive !important;
+    font-family: 'Tangerine', cursive;
     color: #ffffff;
 }
 
 .font-arabic {
-    font-family: 'Noto Naskh Arabic', serif !important;
+    font-family: 'Noto Naskh Arabic', serif;
     color: #ffffff ;
 }
 
@@ -125,7 +125,7 @@ Marhey
 }
 
 .dark-section {
-    background-color: #111111 !important;
+    background-color: #111111;
     margin-top: -0.5rem;
     margin-bottom: -0.5rem;
 }
