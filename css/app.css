@@ -21,12 +21,12 @@ Marhey
 
 .font-esthetic {
     font-family: 'Tangerine', cursive !important;
-    color: #ffffff !important;
+    color: #ffffff;
 }
 
 .font-arabic {
     font-family: 'Noto Naskh Arabic', serif !important;
-    color: #ffffff !important;
+    color: #ffffff ;
 }
 
 .img-crop {
