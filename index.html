@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>V-PET</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      overflow-x: hidden;
+      width: 100%;
+    }
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      margin: 0;
+      /*padding: 10px;*/
+      text-align: center;
+
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh; /* full screen height */
+    }
+
+    h1 {
+      margin: 10px 0 20px;
+      font-size: 22px;
+    }
+
+    .main-content {
+      flex: 1; /* pushes footer to bottom */
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 15px;
+      flex: 1 1 200px;
+      max-width: 300px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .value-power {
+      font-size: 32px;
+      /*color: #38bdf8;*/
+      color: #22c55e; /* green */
+    }
+    .value-counts {
+      font-size: 32px;
+      color: #38bdf8; /* blue */
+    }
+
+    .chart-container {
+      width: 100%;
+      max-width: 900px;
+      height: 400px;
+      margin: auto;
+      margin-top: 20px;
+    }
+
+    canvas {
+      background: #1e293b;
+      border-radius: 10px;
+    }
+
+    .footer {
+      background: linear-gradient(90deg, #0f172a, #1e293b);
+      color: #94a3b8;
+      text-align: center;
+      padding: 12px 10px;
+      border-top: 1px solid #334155;
+      font-size: 14px;
+
+      width: 100%;
+      box-shadow: 0 -6px 12px -4px rgba(34, 197, 94, 0.4);
+    }
+
+    .footer strong {
+      color: white; /*#22c55e;*/
+    }
+
+    .footer span {
+      display: block;
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 600px) {
+      .value {
+        font-size: 26px;
+      }
+
+      h1 {
+        font-size: 18px;
+      }
+
+      .chart-container {
+        height: 300px;
+      }
+    }
+
+
+  </style>
+</head>
+
+<body>
+<div class="main-content">
+  <h1>⚡V-PET Energy Dashboard</h1>
+
+  <div class="container">
+    <div class="card">
+      <h3>Generated Power</h3>
+      <div class="value-power" id="power">--</div>
+    </div>
+
+    <div class="card">
+      <h3>Vehicle Counts</h3>
+      <div class="value-counts" id="count">--</div>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="chart"></canvas>
+  </div>
+</div>
+
+<div class="footer">
+  <strong>Developed by Kapil H. Sonone</strong>
+  <span>Live Data from RPi Pico W • Updated every 30 seconds</span>
+</div>
+
+<script>
+const channelID = "3326042";
+const apiKey = "8LXMVQL1GEJZSU6K";
+
+const url = `https://api.thingspeak.com/channels/${channelID}/feeds.json?api_key=${apiKey}&results=100`;
+
+let chart;
+
+async function fetchData() {
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const feeds = data.feeds;
+
+    let labels = [];
+    let power = [];
+    let count = [];
+
+    const now = new Date();
+
+    feeds.forEach(f => {
+      const d = new Date(f.created_at);
+
+      const diffMinutes = (now - d) / (1000 * 60);
+
+      // Keep only last 1 hour (FIFO)
+      if (diffMinutes <= 60) {
+
+        const timeLabel =
+          d.getHours() + ":" +
+          String(d.getMinutes()).padStart(2, '0');
+
+        labels.push(timeLabel);
+        power.push(parseFloat(f.field1));
+        count.push(parseFloat(f.field2));
+      }
+    });
+
+    // Update numeric display
+    if (power.length > 0) {
+      document.getElementById("power").innerText = power.at(-1) + " W";
+      document.getElementById("count").innerText = count.at(-1);
+    }
+
+    // Date label for axis title
+    const today = new Date();
+    const dateLabel =
+      today.getDate() + "/" +
+      (today.getMonth()+1) + "/" +
+      today.getFullYear();
+
+    // Draw chart
+    if (chart) chart.destroy();
+
+    const ctx = document.getElementById('chart').getContext('2d');
+
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Power (W)",
+            data: power,
+            borderWidth: 2,
+            tension: 0.3,
+            borderColor: "#22c55e",   // green line
+            backgroundColor: "rgba(34, 197, 94, 0.2)", // light green fill
+            fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: { color: "white" }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: "white",
+              maxRotation: 45,
+              minRotation: 30
+            },
+            title: {
+              display: true,
+              text: "Last 1 Hour (" + dateLabel + ", Live)",
+              color: "white"
+            }
+          },
+          y: {
+            ticks: { color: "white" },
+            title: {
+              display: true,
+              text: "Power (W)",
+              color: "white"
+            }
+          }
+        }
+      }
+    });
+
+  } catch (err) {
+    console.error("Error:", err);
+  }
+}
+
+// Refresh every 15 sec
+setInterval(fetchData, 15000);
+fetchData();
+</script>
+
+</body>
+</html>
