@@ -186,7 +186,7 @@ async function fetchData() {
 
     // Update numeric display
     if (power.length > 0) {
-      document.getElementById("power").innerText = power.at(-1) + " W";
+      document.getElementById("power").innerText = power.at(-1).toFixed(2) + " W";
       document.getElementById("count").innerText = count.at(-1);
     }
 
